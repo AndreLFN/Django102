@@ -1,5 +1,6 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
+from django.contrib import auth
 
 
 
@@ -30,10 +31,28 @@ def cadastro(request):
         return render(request, 'usuarios/cadastro.html')
 
 def login(request):
+    if request.method == 'POST':
+        email = request.POST['email']
+        senha = request.POST['senha']
+        if email == '' or senha == '':
+            #Mensagem de campos vazios
+            return redirect('login')
+        if User.objects.filter(email=email).exists():
+            nome = User.objects.filter(email=email).values_list('username', flat=True).get()
+            user = auth.authenticate(request, username=nome, password=senha)
+            if user is not None:
+                auth.login(request, user)
+                print('lOGIN REALIZADO COM SUCESSO')
+                return redirect('dashboard')
+        return redirect('dashboard')
     return render(request, 'usuarios/login.html')
 
 def dashboard(request):
-    pass
+    if request.user.is_authenticated:
+        return render(request, 'usuarios/dashboard.html')
+    else:
+        return redirect('index')
 
 def logout(request):
-    pass
+    auth.logout(request)
+    return redirect('index')
