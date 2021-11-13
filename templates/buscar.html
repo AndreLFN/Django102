@@ -9,7 +9,7 @@
         <img src="{% static 'img/core-img/pizza.png' %}" alt="">
     </div>
 
-    {% include 'partials/_search_wrapper.html' %}
+    {% include 'partials/_busca.html' %}
 
     {% include 'partials/_menu.html' %}
 
@@ -36,6 +36,9 @@
                 </div>
                 {% endfor %}
                 {% else %}
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <P>Receita não encontrada</P>
+                    </div>
                 {% endif %}
             </div>
         </div>
