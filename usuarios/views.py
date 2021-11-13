@@ -1,6 +1,6 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.models import User
-from django.contrib import auth
+from django.contrib import auth, messages
 from receitas.models import Receita
 
 
@@ -12,21 +12,24 @@ def cadastro(request):
         senha = request.POST['password']
         senha2 = request.POST['password2']
 
-        if not nome.strip():
-            # Adicionar mensagem de erro ao usuario
+        if campo_vazio(nome):
+            messages.error(request, 'O campo nome não pode estar vazio')
             return redirect('cadastro')
-        if not email.strip():
-            # Adicionar mensagem de erro ao usuario
+        if campo_vazio(email):
+            messages.error(request, 'O campo e-mail não pode estar vazio')
             return redirect('cadastro')
         if senha != senha2:
-            # Adicionar mensagem de senhas diferentes
+            messages.error(request, 'As senhas não são iguais')
             return redirect('cadastro')
         if User.objects.filter(email=email).exists():
-            # Adicionar mensagem de usuario ja cadastrado
+            messages.error(request, 'Este e-mail já está cadastrado')
+            return redirect('cadastro')
+        if User.objects.filter(username=nome).exists():
+            messages.error(request, 'Usuário já cadastrado')
             return redirect('cadastro')
         user = User.objects.create_user(username=nome, email=email, password=senha)
         user.save()
-        print('usuario cadastrado com sucesso')
+        messages.success(request, 'Cadastro realizado com sucesso!')
         return redirect('login')
     else:
         return render(request, 'usuarios/cadastro.html')
@@ -35,8 +38,8 @@ def login(request):
     if request.method == 'POST':
         email = request.POST['email']
         senha = request.POST['senha']
-        if email == '' or senha == '':
-            #Mensagem de campos vazios
+        if campo_vazio(email) or campo_vazio(senha):
+            messages.error(request,'Os campos e-mail e senha não podem estar vazios')
             return redirect('login')
         if User.objects.filter(email=email).exists():
             nome = User.objects.filter(email=email).values_list('username', flat=True).get()
@@ -78,3 +81,10 @@ def cria_receita(request):
         return redirect('dashboard')
     else:
         return render(request, 'usuarios/cria_receita.html')
+
+
+def campo_vazio(campo):
+    return not campo.strip()
+
+
+
